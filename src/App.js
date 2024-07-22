@@ -1,24 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, useLocation } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import Sidebar from "./components/Sidebar";
+import AppRoutes from "./routes";
+
+const AppContent = () => {
+  const location = useLocation();
+  const hideSidebarPaths = [
+    "/forget-password",
+    "/reset-password",
+    "/activate",
+    "/login",
+  ];
+  const hideSidebar = hideSidebarPaths.some((path) =>
+    location.pathname.startsWith(path)
+  );
+
+  return (
+    <>
+      {!hideSidebar && <Sidebar />}
+      <div className={hideSidebar ? "w-full" : "ml-64"}>
+        <AppRoutes />
+      </div>
+    </>
+  );
+};
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </Router>
   );
 }
 

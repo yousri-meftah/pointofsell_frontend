@@ -1,63 +1,44 @@
 import React, { useState, useEffect } from "react";
-import Filter from "../components/Filter";
-import PaginatedTable from "../components/PaginatedTable";
-import CustomerModal from "../components/CustomerModal";
-import ConfirmModal from "../components/ConfirmModal";
-import api from "../services/api";
 import {
   Button,
   MenuItem,
   Select,
   FormControl,
   InputLabel,
+  Typography,
+  Box,
 } from "@mui/material";
+import PaginatedTable from "../components/PaginatedTable";
+import CategoryModal from "../components/CategoryModal";
+import ConfirmModal from "../components/ConfirmModal";
+import api from "../services/api";
+import Filter from "./Filter";
 
-const Customers = () => {
-  const [customers, setCustomers] = useState([]);
+const Categories = () => {
+  const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [pricelists, setPricelists] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   useEffect(() => {
-    fetchCustomers();
-    fetchPricelists();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchCategories();
   }, [page, pageSize, filter]);
 
-  const fetchCustomers = async () => {
+  const fetchCategories = async () => {
     try {
-      const response = await api.get("/customers", {
-        params: {
-          page: page,
-          page_size: pageSize,
-          filter: filter,
+      const response = await api.get("/categories", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      setCustomers(response.data.list);
-      setTotalPages(response.data.total_pages);
+      setCategories(response.data.categories);
+      setTotalPages(Math.ceil(response.data.categories.length / pageSize));
     } catch (error) {
-      console.error("Failed to fetch customers", error);
-    }
-  };
-
-  const fetchPricelists = async () => {
-    try {
-      const response = await api.get("/pricelists", {
-        params: {
-          page: 1,
-          page_size: 10,
-        },
-      });
-      setPricelists(
-        response.data.items.map((item, index) => ({ id: index + 1, ...item }))
-      );
-    } catch (error) {
-      console.error("Failed to fetch pricelists", error);
+      console.error("Failed to fetch categories", error);
     }
   };
 
@@ -76,61 +57,63 @@ const Customers = () => {
   };
 
   const handleEdit = (id) => {
-    const customer = customers.find((c) => c.id === id);
-    setSelectedCustomer(customer);
+    console.log(id);
+    const category = categories.find((c) => c.id === id);
+    console.log("cat = ", category);
+    setSelectedCategory(category);
     setModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setSelectedCustomer({ id });
+  const handleDelete = (name) => {
+    setSelectedCategory({ name });
     setConfirmOpen(true);
   };
 
-  const handleSaveCustomer = async (customer) => {
-    if (customer.id) {
-      // Update customer
+  const handleSaveCategory = async (category) => {
+    if (selectedCategory && selectedCategory.name) {
+      // Update category
       try {
-        await api.put(`/customers/${customer.id}`, customer, {
+        await api.put(`/categories/${selectedCategory.name}`, category, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
       } catch (error) {
-        console.error("Failed to update customer", error);
+        console.error("Failed to update category", error);
       }
     } else {
-      // Add customer
+      // Add category
       try {
-        await api.post("/customers", customer, {
+        await api.post("/categories", category, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
       } catch (error) {
-        console.error("Failed to add customer", error);
+        console.error("Failed to add category", error);
       }
     }
     setModalOpen(false);
-    fetchCustomers();
+    fetchCategories();
   };
 
   const handleConfirmDelete = async () => {
     try {
-      await api.delete(`/customers/${selectedCustomer.id}`, {
+      await api.delete(`/categories/${selectedCategory.name}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
     } catch (error) {
-      console.error("Failed to delete customer", error);
+      console.error("Failed to delete category", error);
     }
     setConfirmOpen(false);
-    fetchCustomers();
+    fetchCategories();
   };
 
   const columns = [
     { field: "name", headerName: "Name" },
-    { field: "email", headerName: "Email" },
+    { field: "description", headerName: "Description" },
   ];
 
   return (
@@ -143,14 +126,11 @@ const Customers = () => {
             color="primary"
             className="mr-2"
             onClick={() => {
-              setSelectedCustomer(null);
+              setSelectedCategory(null);
               setModalOpen(true);
             }}
           >
-            Add Customer
-          </Button>
-          <Button variant="contained" color="secondary">
-            Import Customers
+            Add Category
           </Button>
         </div>
       </div>
@@ -170,7 +150,7 @@ const Customers = () => {
         </FormControl>
       </div>
       <PaginatedTable
-        data={customers}
+        data={categories}
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -178,21 +158,20 @@ const Customers = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-      <CustomerModal
+      <CategoryModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSave={handleSaveCustomer}
-        initialData={selectedCustomer || {}}
-        pricelists={pricelists}
+        onSave={handleSaveCategory}
+        initialData={selectedCategory || {}}
       />
       <ConfirmModal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
-        message="Are you sure you want to delete this customer?"
+        message="Are you sure you want to delete this category?"
       />
     </div>
   );
 };
 
-export default Customers;
+export default Categories;

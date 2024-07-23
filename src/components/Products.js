@@ -1,63 +1,44 @@
 import React, { useState, useEffect } from "react";
-import Filter from "../components/Filter";
-import PaginatedTable from "../components/PaginatedTable";
-import CustomerModal from "../components/CustomerModal";
-import ConfirmModal from "../components/ConfirmModal";
-import api from "../services/api";
 import {
   Button,
   MenuItem,
   Select,
   FormControl,
   InputLabel,
+  Typography,
+  Box,
 } from "@mui/material";
+import PaginatedTable from "../components/PaginatedTable";
+import ProductModal from "../components/ProductModal";
+import ConfirmModal from "../components/ConfirmModal";
+import api from "../services/api";
+import Filter from "./Filter";
 
-const Customers = () => {
-  const [customers, setCustomers] = useState([]);
+const Products = () => {
+  const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [filter, setFilter] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [pricelists, setPricelists] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-    fetchCustomers();
-    fetchPricelists();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchProducts();
   }, [page, pageSize, filter]);
 
-  const fetchCustomers = async () => {
+  const fetchProducts = async () => {
     try {
-      const response = await api.get("/customers", {
-        params: {
-          page: page,
-          page_size: pageSize,
-          filter: filter,
+      const response = await api.get("/products", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      setCustomers(response.data.list);
-      setTotalPages(response.data.total_pages);
+      setProducts(response.data.products);
+      setTotalPages(Math.ceil(response.data.products.length / pageSize));
     } catch (error) {
-      console.error("Failed to fetch customers", error);
-    }
-  };
-
-  const fetchPricelists = async () => {
-    try {
-      const response = await api.get("/pricelists", {
-        params: {
-          page: 1,
-          page_size: 10,
-        },
-      });
-      setPricelists(
-        response.data.items.map((item, index) => ({ id: index + 1, ...item }))
-      );
-    } catch (error) {
-      console.error("Failed to fetch pricelists", error);
+      console.error("Failed to fetch products", error);
     }
   };
 
@@ -76,61 +57,65 @@ const Customers = () => {
   };
 
   const handleEdit = (id) => {
-    const customer = customers.find((c) => c.id === id);
-    setSelectedCustomer(customer);
+    const product = products.find((p) => p.id === id);
+    console.log("id = ", id);
+    setSelectedProduct(product);
     setModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    setSelectedCustomer({ id });
+  const handleDelete = (name) => {
+    setSelectedProduct({ name });
     setConfirmOpen(true);
   };
 
-  const handleSaveCustomer = async (customer) => {
-    if (customer.id) {
-      // Update customer
+  const handleSaveProduct = async (product) => {
+    if (selectedProduct && selectedProduct.name) {
+      // Update product
       try {
-        await api.put(`/customers/${customer.id}`, customer, {
+        await api.put(`/products/${selectedProduct.name}`, product, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
       } catch (error) {
-        console.error("Failed to update customer", error);
+        console.error("Failed to update product", error);
       }
     } else {
-      // Add customer
+      // Add product
       try {
-        await api.post("/customers", customer, {
+        await api.post("/products", product, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
       } catch (error) {
-        console.error("Failed to add customer", error);
+        console.error("Failed to add product", error);
       }
     }
     setModalOpen(false);
-    fetchCustomers();
+    fetchProducts();
   };
 
   const handleConfirmDelete = async () => {
     try {
-      await api.delete(`/customers/${selectedCustomer.id}`, {
+      await api.delete(`/products/${selectedProduct.name}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
     } catch (error) {
-      console.error("Failed to delete customer", error);
+      console.error("Failed to delete product", error);
     }
     setConfirmOpen(false);
-    fetchCustomers();
+    fetchProducts();
   };
 
   const columns = [
+    { field: "image_link", headerName: "Picture", image: true },
     { field: "name", headerName: "Name" },
-    { field: "email", headerName: "Email" },
+    { field: "description", headerName: "Description" },
+    { field: "unit_price", headerName: "Price" },
+    { field: "quantity", headerName: "Quantity" },
   ];
 
   return (
@@ -143,14 +128,11 @@ const Customers = () => {
             color="primary"
             className="mr-2"
             onClick={() => {
-              setSelectedCustomer(null);
+              setSelectedProduct(null);
               setModalOpen(true);
             }}
           >
-            Add Customer
-          </Button>
-          <Button variant="contained" color="secondary">
-            Import Customers
+            Add Product
           </Button>
         </div>
       </div>
@@ -170,7 +152,7 @@ const Customers = () => {
         </FormControl>
       </div>
       <PaginatedTable
-        data={customers}
+        data={products}
         columns={columns}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -178,21 +160,20 @@ const Customers = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-      <CustomerModal
+      <ProductModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSave={handleSaveCustomer}
-        initialData={selectedCustomer || {}}
-        pricelists={pricelists}
+        onSave={handleSaveProduct}
+        initialData={selectedProduct || {}}
       />
       <ConfirmModal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirmDelete}
-        message="Are you sure you want to delete this customer?"
+        message="Are you sure you want to delete this product?"
       />
     </div>
   );
 };
 
-export default Customers;
+export default Products;

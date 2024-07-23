@@ -38,9 +38,17 @@ const PaginatedTable = ({
           <TableBody>
             {data.map((row) => (
               <TableRow key={row.id}>
-                {columns.map((column) => (
-                  <TableCell key={column.field}>{row[column.field]}</TableCell>
-                ))}
+                {columns.map((column) =>
+                  column.image ? (
+                    <TableCell key={column.field}>
+                      <img src={row[column.field]} alt={row.name} width="50" />
+                    </TableCell>
+                  ) : (
+                    <TableCell key={column.field}>
+                      {row[column.field]}
+                    </TableCell>
+                  )
+                )}
                 <TableCell>
                   <IconButton onClick={() => onEdit(row.id)}>
                     <EditIcon />

@@ -31,12 +31,6 @@ export const AuthProvider = ({ children }) => {
     }
   }, [dispatch]);
 
-  useEffect(() => {
-    if (!token) {
-      //navigate("/login");
-    }
-  }, [token, navigate]);
-
   return (
     <AuthContext.Provider value={{ token, user }}>
       {children}

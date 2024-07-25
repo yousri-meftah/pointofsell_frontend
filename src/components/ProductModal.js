@@ -1,12 +1,36 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Box, TextField, Button } from "@mui/material";
+import {
+  Modal,
+  Box,
+  TextField,
+  Button,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+} from "@mui/material";
+import api from "../services/api";
 
 const ProductModal = ({ open, onClose, onSave, initialData }) => {
   const [formData, setFormData] = useState(initialData);
+  const [cat, setCategories] = useState([]);
 
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("/categories");
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error("Failed to fetch categories", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,6 +90,28 @@ const ProductModal = ({ open, onClose, onSave, initialData }) => {
           fullWidth
           margin="normal"
         />
+        <TextField
+          label="Image Link"
+          name="image_link"
+          value={formData.image_link || ""}
+          onChange={handleChange}
+          fullWidth
+          margin="normal"
+        />
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Category</InputLabel>
+          <Select
+            name="category_id"
+            value={formData.category_id || ""}
+            onChange={handleChange}
+          >
+            {cat.map((category) => (
+              <MenuItem key={category.id} value={category.id}>
+                {category.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <Box mt={2} display="flex" justifyContent="flex-end">
           <Button
             onClick={onClose}

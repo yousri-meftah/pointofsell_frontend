@@ -71,7 +71,8 @@ const Employees = () => {
   };
 
   const handleSaveEmployee = async (employee) => {
-    if (employee.id) {
+    console.log("employee", employee);
+    if (employee && employee.id) {
       // Update employee
       try {
         await api.put(`/employee/${employee.id}`, employee, {

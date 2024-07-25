@@ -13,8 +13,7 @@ const style = {
   p: 4,
 };
 
-const CategoryModal = ({ open, onClose, onSave, initialData = {} }) => {
-  //console.log("d = ", initialData);
+const PricelistModal = ({ open, onClose, onSave, initialData = {} }) => {
   const [name, setName] = useState(initialData.name || "");
   const [description, setDescription] = useState(initialData.description || "");
   const [iconName, setIconName] = useState(initialData.icon_name || "");
@@ -33,7 +32,7 @@ const CategoryModal = ({ open, onClose, onSave, initialData = {} }) => {
     <Modal open={open} onClose={onClose}>
       <Box sx={style}>
         <Typography variant="h6" component="h2">
-          {name ? "Edit Category" : "Add Category"}
+          {name ? "Edit Pricelist" : "Add Pricelist"}
         </Typography>
         <TextField
           label="Name"
@@ -75,4 +74,4 @@ const CategoryModal = ({ open, onClose, onSave, initialData = {} }) => {
   );
 };
 
-export default CategoryModal;
+export default PricelistModal;

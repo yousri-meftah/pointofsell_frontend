@@ -9,7 +9,10 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
+import axios from "axios";
 
 const style = {
   position: "absolute",
@@ -22,6 +25,8 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+
+const contractTypes = ["CDI", "CDD", "Internship", "Freelance"];
 
 const UserModal = ({
   open,
@@ -37,13 +42,17 @@ const UserModal = ({
   const [pricelist, setPricelist] = useState(initialData.pricelist || "");
   const [firstname, setFirstname] = useState(initialData.firstname || "");
   const [lastname, setLastname] = useState(initialData.lastname || "");
-  const [number, setNumber] = useState(initialData.number || "");
-  const [gender, setGender] = useState(initialData.gender || "");
   const [phoneNumber, setPhoneNumber] = useState(
     initialData.phone_number || ""
   );
-  const [jobPosition, setJobPosition] = useState(
-    initialData.job_position || ""
+  const [birthDate, setBirthDate] = useState(initialData.birth_date || "");
+  const [cnssNumber, setCnssNumber] = useState(initialData.cnss_number || "");
+  const [gender, setGender] = useState(initialData.gender || "");
+  const [contractType, setContractType] = useState(
+    initialData.contract_type || ""
+  );
+  const [isActive, setIsActive] = useState(
+    initialData.account_status === "ACTIVE"
   );
 
   useEffect(() => {
@@ -53,26 +62,36 @@ const UserModal = ({
     setPricelist(initialData.pricelist || "");
     setFirstname(initialData.firstname || "");
     setLastname(initialData.lastname || "");
-    setNumber(initialData.number || "");
-    setGender(initialData.gender || "");
     setPhoneNumber(initialData.phone_number || "");
-    setJobPosition(initialData.job_position || "");
+    setBirthDate(initialData.birth_date || "");
+    setCnssNumber(initialData.cnss_number || "");
+    setGender(initialData.gender || "");
+    setContractType(initialData.contract_type || "");
+    setIsActive(initialData.account_status === "ACTIVE");
   }, [initialData]);
 
   const handleSave = () => {
-    if (isCustomer) {
-      onSave({ id, name, email, pricelist });
-    } else {
-      onSave({
-        id,
-        firstname,
-        lastname,
-        number,
-        gender,
-        phone_number: phoneNumber,
-        job_position: jobPosition,
-      });
-    }
+    const userData = isCustomer
+      ? {
+          id,
+          name,
+          email,
+          pricelist,
+          account_status: isActive ? "ACTIVE" : "INACTIVE",
+        }
+      : {
+          id,
+          firstname,
+          lastname,
+          phone_number: phoneNumber,
+          birth_date: birthDate,
+          cnss_number: cnssNumber,
+          gender,
+          contract_type: contractType,
+          account_status: isActive ? "ACTIVE" : "INACTIVE",
+        };
+
+    onSave(userData);
   };
 
   return (
@@ -139,22 +158,6 @@ const UserModal = ({
               onChange={(e) => setLastname(e.target.value)}
             />
             <TextField
-              label="Number"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={number}
-              onChange={(e) => setNumber(e.target.value)}
-            />
-            <TextField
-              label="Gender"
-              variant="outlined"
-              fullWidth
-              margin="normal"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-            />
-            <TextField
               label="Phone Number"
               variant="outlined"
               fullWidth
@@ -163,26 +166,76 @@ const UserModal = ({
               onChange={(e) => setPhoneNumber(e.target.value)}
             />
             <TextField
-              label="Job Position"
+              label="Birth Date"
+              type="date"
               variant="outlined"
               fullWidth
               margin="normal"
-              value={jobPosition}
-              onChange={(e) => setJobPosition(e.target.value)}
+              InputLabelProps={{
+                shrink: true,
+              }}
+              value={birthDate}
+              onChange={(e) => setBirthDate(e.target.value)}
             />
+            <TextField
+              label="CNSS Number"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={cnssNumber}
+              onChange={(e) => setCnssNumber(e.target.value)}
+            />
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel>Gender</InputLabel>
+              <Select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                label="Gender"
+              >
+                <MenuItem value="MALE">Male</MenuItem>
+                <MenuItem value="FEMALE">Female</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl variant="outlined" fullWidth margin="normal">
+              <InputLabel>Contract Type</InputLabel>
+              <Select
+                value={contractType}
+                onChange={(e) => setContractType(e.target.value)}
+                label="Contract Type"
+              >
+                {contractTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </>
         )}
-        <Button variant="contained" color="primary" onClick={handleSave}>
-          Save
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={onClose}
-          className="ml-2"
-        >
-          Cancel
-        </Button>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              name="active"
+              color="primary"
+            />
+          }
+          label="Active"
+        />
+        <Box mt={2} display="flex" justifyContent="flex-end">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSave}
+            style={{ marginRight: "10px" }}
+          >
+            Save
+          </Button>
+          <Button variant="contained" color="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+        </Box>
       </Box>
     </Modal>
   );

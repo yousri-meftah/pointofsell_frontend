@@ -30,11 +30,7 @@ const Categories = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await api.get("/categories", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await api.get("/categories", {});
       setCategories(response.data.categories);
       setTotalPages(Math.ceil(response.data.categories.length / pageSize));
     } catch (error) {
@@ -57,7 +53,6 @@ const Categories = () => {
   };
 
   const handleEdit = (id) => {
-    console.log(id);
     const category = categories.find((c) => c.id === id);
     console.log("cat = ", category);
     setSelectedCategory(category);
@@ -70,19 +65,14 @@ const Categories = () => {
   };
 
   const handleSaveCategory = async (category) => {
-    if (selectedCategory && selectedCategory.name) {
-      // Update category
+    console.log(selectedCategory);
+    if (selectedCategory && selectedCategory.id) {
       try {
-        await api.put(`/categories/${selectedCategory.name}`, category, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        await api.patch(`/categories/${selectedCategory.id}`, category, {});
       } catch (error) {
         console.error("Failed to update category", error);
       }
     } else {
-      // Add category
       try {
         await api.post("/categories", category, {
           headers: {
@@ -98,12 +88,9 @@ const Categories = () => {
   };
 
   const handleConfirmDelete = async () => {
+    //console.log("here", selectedCategory);
     try {
-      await api.delete(`/categories/${selectedCategory.name}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      await api.delete(`/categories/${selectedCategory.name}`, {});
     } catch (error) {
       console.error("Failed to delete category", error);
     }
@@ -112,6 +99,7 @@ const Categories = () => {
   };
 
   const columns = [
+    { field: "id", headerName: "ID" },
     { field: "name", headerName: "Name" },
     { field: "description", headerName: "Description" },
   ];
@@ -119,7 +107,6 @@ const Categories = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between mb-4">
-        <Filter onFilter={handleFilter} />
         <div>
           <Button
             variant="contained"

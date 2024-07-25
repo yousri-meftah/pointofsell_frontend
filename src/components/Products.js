@@ -12,7 +12,7 @@ import PaginatedTable from "../components/PaginatedTable";
 import ProductModal from "../components/ProductModal";
 import ConfirmModal from "../components/ConfirmModal";
 import api from "../services/api";
-import Filter from "./Filter";
+import FilterProducts from "./FilterProducts";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -69,20 +69,17 @@ const Products = () => {
   };
 
   const handleSaveProduct = async (product) => {
+    //console.log("first", selectedProduct);
     if (selectedProduct && selectedProduct.name) {
-      // Update product
       try {
-        await api.put(`/products/${selectedProduct.name}`, product, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        await api.patch(`/products/${selectedProduct.id}`, product, {});
       } catch (error) {
         console.error("Failed to update product", error);
       }
     } else {
       // Add product
       try {
+        console.log("pruduct = ", product);
         await api.post("/products", product, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -97,6 +94,7 @@ const Products = () => {
   };
 
   const handleConfirmDelete = async () => {
+    console.log("here = ", selectedProduct);
     try {
       await api.delete(`/products/${selectedProduct.name}`, {
         headers: {
@@ -120,8 +118,8 @@ const Products = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between mb-4">
-        <Filter onFilter={handleFilter} />
+      <div className="flex justify-between gap-10 mb-4">
+        <FilterProducts onFilter={handleFilter} />
         <div>
           <Button
             variant="contained"

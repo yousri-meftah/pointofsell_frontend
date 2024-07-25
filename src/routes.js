@@ -14,6 +14,7 @@ import ForgetPassword from "./pages/ForgetPassword";
 import ActivationResetPassword from "./pages/ActivationResetPassword";
 import Login from "./pages/Login"; // Import Login component
 import { useSelector } from "react-redux";
+import OrderSessionPage from "./components/OrderSessionPage";
 
 const AppRoutes = () => {
   const token = useSelector((state) => state.auth.token);
@@ -85,11 +86,13 @@ const AppRoutes = () => {
       >
         <Route path="/orders" element={<Orders />} />
       </Route>
+      <Route path="/see" element={<OrderSessionPage />} />
       <Route
         element={<ProtectedRoute allowedRoles={["SUPER_USER", "VENDOR"]} />}
       >
         <Route path="/sessions" element={<Sessions />} />
       </Route>
+
       <Route
         element={<ProtectedRoute allowedRoles={["SUPER_USER", "ADMIN"]} />}
       >

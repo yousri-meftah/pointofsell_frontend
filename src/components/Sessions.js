@@ -10,6 +10,7 @@ import PaginatedTable from "../components/PaginatedTable";
 import ConfirmModal from "../components/ConfirmModal";
 import api from "../services/api";
 import Filter from "./Filter";
+import { Navigate } from "react-router-dom";
 
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
@@ -57,8 +58,24 @@ const Sessions = () => {
     setPage(1);
   };
 
-  const handleStartSession = () => {
-    // Handle starting a new session
+  const handleStartSession = async () => {
+    Navigate(`/sessions/5`);
+    return;
+    try {
+      const response = await api.post(
+        "/sessions",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const newSessionId = response.data.session_id; // Adjust according to your response structure
+      Navigate(`/sessions/${newSessionId}`);
+    } catch (error) {
+      console.error("Failed to start session", error);
+    }
   };
 
   const handleEndSession = (id) => {
@@ -111,7 +128,6 @@ const Sessions = () => {
           <Button
             variant="contained"
             color="primary"
-            className="mr-2"
             onClick={handleStartSession}
           >
             Start Session

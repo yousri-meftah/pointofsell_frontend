@@ -195,7 +195,7 @@ const Pricelists = () => {
     }
     setConfirmDeleteOpen(false);
   };
-
+  console.log("yo = ", pricelistProducts);
   return (
     <Box p={4}>
       <Box display="flex" justifyContent="space-between" mb={4}>
@@ -235,7 +235,7 @@ const Pricelists = () => {
                 <TableHead>
                   <TableRow>
                     <TableCell>Product Name</TableCell>
-                    <TableCell>Price</TableCell>
+                    <TableCell>New Price</TableCell>
                     <TableCell>Start Date</TableCell>
                     <TableCell>End Date</TableCell>
                     <TableCell>Edit</TableCell>
@@ -245,7 +245,7 @@ const Pricelists = () => {
                 <TableBody>
                   {(pricelistProducts[pricelist.id] || []).map((line) => (
                     <TableRow key={line.id}>
-                      <TableCell>{line.product_id}</TableCell>
+                      <TableCell>{line.product_name}</TableCell>
                       <TableCell>{line.new_price}</TableCell>
                       <TableCell>
                         {new Date(line.start_date).toLocaleDateString()}

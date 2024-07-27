@@ -63,16 +63,24 @@ const OrderSummary = ({ cart, onRemoveFromCart, updateCartWithPricelist }) => {
 
   const handleApplyCode = async () => {
     try {
-      //const response = await api.post("/apply-code", { code }, {});
-      setAppliedProgram(code);
-      //setAppliedProgram(response.data);
-      /*if (response.data.type === "pricelist") {
+      const response = await api.post(
+        "/apply-code",
+        { code },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      setAppliedProgram(response.data);
+      if (response.data.type === "pricelist") {
         updateCartWithPricelist(response.data.pricelist);
       } else if (response.data.type === "coupon") {
         // Apply coupon logic
       } else if (response.data.type === "buyXgetY") {
         // Apply BuyXGetY logic
-      }*/
+      }
     } catch (error) {
       console.error("Failed to apply code", error);
     }

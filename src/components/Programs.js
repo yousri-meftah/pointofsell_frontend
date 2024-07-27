@@ -27,7 +27,8 @@ const Programs = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    fetchPrograms();
+    fetchcoupanPrograms();
+    fetchBUYXGETYPrograms();
     fetchProducts();
   }, []);
 
@@ -43,13 +44,20 @@ const Programs = () => {
       console.error("Failed to fetch products", error);
     }
   };
-  const fetchPrograms = async () => {
+  const fetchBUYXGETYPrograms = async () => {
     try {
-      const response = await api.get("/programs/programs_with_items", {});
-      const programs = response.data.program_and_its_item;
-
-      setCouponPrograms(programs.Coupon || []);
-      setBuyXGetYPrograms(programs.BuyXGetY || []);
+      const response = await api.get("/programs/BUYXGETY_program", {});
+      const programs = response.data.programs;
+      setBuyXGetYPrograms(programs || []);
+    } catch (error) {
+      console.error("Failed to fetch programs", error);
+    }
+  };
+  const fetchcoupanPrograms = async () => {
+    try {
+      const response = await api.get("/programs/coupon_program", {});
+      const programs = response.data.programs;
+      setCouponPrograms(programs || []);
     } catch (error) {
       console.error("Failed to fetch programs", error);
     }
@@ -81,7 +89,8 @@ const Programs = () => {
           },
         });
       }
-      fetchPrograms();
+      fetchcoupanPrograms();
+      fetchBUYXGETYPrograms();
     } catch (error) {
       console.error("Failed to save program", error);
     }
@@ -92,7 +101,7 @@ const Programs = () => {
     setSelectedProgram(program);
     setModalOpen(true);
   };
-  console.log("couponPrograms = ", couponPrograms);
+  //console.log("couponPrograms = ", couponPrograms);
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" mb={4}>
@@ -159,8 +168,8 @@ const Programs = () => {
               {buyXGetYPrograms.map((program) => (
                 <TableRow key={program.id}>
                   <TableCell>{program.code}</TableCell>
-                  <TableCell>{program.buy_item}</TableCell>
-                  <TableCell>{program.get_item}</TableCell>
+                  <TableCell>{program.product_buy_id}</TableCell>
+                  <TableCell>{program.product_get_id}</TableCell>
                   <TableCell>{program.status}</TableCell>
                   <TableCell>
                     <IconButton>

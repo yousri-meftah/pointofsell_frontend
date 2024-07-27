@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Navigate, useParams } from "react-router-dom";
-import { Box, Button, Tab, Tabs, Typography, InputBase } from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Tab,
+  Tabs,
+  Typography,
+  InputBase,
+  Paper,
+  Grid,
+  Divider,
+} from "@mui/material";
 import api from "../services/api";
 import ProductCard from "../components/ProductCard";
 import OrderSummary from "../components/OrderSummary";
 
 const OrderSessionPage = () => {
   const { sessionId } = useParams();
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -113,22 +124,49 @@ const OrderSessionPage = () => {
     }
   };
 
-  const applyDiscount = (code) => {
-    // Implement logic to apply discount
+  const updateCartWithPricelist = (pricelist) => {
+    const updatedCart = cart.map((item) => {
+      const pricelistItem = pricelist.items.find(
+        (p) => p.product_id === item.id
+      );
+      if (pricelistItem) {
+        return { ...item, unit_price: pricelistItem.new_price };
+      }
+      return item;
+    });
+    setCart(updatedCart);
   };
 
-  const applyCoupon = (code) => {
-    // Implement logic to apply coupon
+  const applyDiscountOrCoupon = async (code) => {
+    try {
+      const response = await api.post(
+        "/apply-code",
+        { code },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (response.data.type === "pricelist") {
+        updateCartWithPricelist(response.data.pricelist);
+      } else if (response.data.type === "coupon") {
+        // Apply coupon logic
+      } else if (response.data.type === "buyXgetY") {
+        // Apply BuyXGetY logic
+      }
+    } catch (error) {
+      console.error("Failed to apply code", error);
+    }
   };
 
-  const applyBuyXGetY = () => {
-    // Implement logic to apply BuyXGetY
-  };
   const handleExitSession = () => {
-    Navigate("/sessions");
+    navigate("/sessions");
   };
+
   return (
-    <>
+    <Box display="flex" flexDirection="column">
       <Box display="flex" justifyContent="space-between" p={2}>
         <Typography variant="h4">Order Session</Typography>
         <Button
@@ -139,54 +177,55 @@ const OrderSessionPage = () => {
           Exit Session
         </Button>
       </Box>
-
-      <Box display="flex">
+      <Divider />
+      <Box display="flex" p={2}>
         <Box width="70%">
-          <Tabs
-            value={selectedCategory}
-            onChange={handleCategoryChange}
-            aria-label="categories"
-            variant="scrollable"
-            scrollButtons="auto"
-          >
-            {categories.map((category) => (
-              <Tab
-                label={category.name}
-                value={category.id}
-                key={category.id}
+          <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
+            <Tabs
+              value={selectedCategory}
+              onChange={handleCategoryChange}
+              aria-label="categories"
+              variant="scrollable"
+              scrollButtons="auto"
+            >
+              <Tab label="All Products" value="" />
+              {categories.map((category) => (
+                <Tab
+                  label={category.name}
+                  value={category.id}
+                  key={category.id}
+                />
+              ))}
+            </Tabs>
+            <Box display="flex" alignItems="center" mt={2} mb={2}>
+              <InputBase
+                placeholder="Search products"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                fullWidth
               />
-            ))}
-          </Tabs>
-          <Box display="flex" alignItems="center" mt={2}>
-            <InputBase
-              placeholder="Search products"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              fullWidth
-            />
-          </Box>
-          <Box display="flex" flexWrap="wrap" mt={2}>
+            </Box>
+          </Paper>
+          <Grid container spacing={2}>
             {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={addToCart}
-              />
+              <Grid item xs={12} sm={6} md={4} key={product.id}>
+                <ProductCard product={product} onAddToCart={addToCart} />
+              </Grid>
             ))}
-          </Box>
+          </Grid>
         </Box>
         <Box width="30%" pl={2}>
           <OrderSummary
             cart={cart}
             onRemoveFromCart={removeFromCart}
-            products={products}
-            applyDiscount={applyDiscount}
-            applyCoupon={applyCoupon}
-            applyBuyXGetY={applyBuyXGetY}
+            updateCartWithPricelist={updateCartWithPricelist}
+            applyDiscount={(code) => applyDiscountOrCoupon(code)}
+            applyCoupon={(code) => applyDiscountOrCoupon(code)}
+            applyBuyXGetY={(code) => applyDiscountOrCoupon(code)}
           />
         </Box>
       </Box>
-    </>
+    </Box>
   );
 };
 

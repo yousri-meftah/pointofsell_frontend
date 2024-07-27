@@ -31,6 +31,7 @@ const ProductLineModal = ({
   products,
   initialData,
 }) => {
+  console.log("initialData", initialData);
   const [productId, setProductId] = useState(initialData.product_id || "");
   const [newPrice, setNewPrice] = useState(initialData.new_price || "");
   const [startDate, setStartDate] = useState(initialData.start_date || "");

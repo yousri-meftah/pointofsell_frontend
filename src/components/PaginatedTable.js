@@ -22,6 +22,7 @@ const PaginatedTable = ({
   totalPages,
   onPageChange,
 }) => {
+  console.log("page in paginated table", data);
   return (
     <div>
       <TableContainer component={Paper}>

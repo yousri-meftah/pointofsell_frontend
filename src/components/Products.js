@@ -31,12 +31,13 @@ const Products = () => {
   const fetchProducts = async () => {
     try {
       const response = await api.get("/products", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        params: {
+          page: page,
+          page_size: pageSize,
         },
       });
       setProducts(response.data.products);
-      setTotalPages(Math.ceil(response.data.products.length / pageSize));
+      setTotalPages(response.data.total_pages);
     } catch (error) {
       console.error("Failed to fetch products", error);
     }

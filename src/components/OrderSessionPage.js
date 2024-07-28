@@ -10,7 +10,10 @@ import {
   Paper,
   Grid,
   Divider,
+  IconButton,
+  Pagination,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import api from "../services/api";
 import ProductCard from "../components/ProductCard";
 import OrderSummary from "../components/OrderSummary";
@@ -23,6 +26,9 @@ const OrderSessionPage = () => {
   const [cart, setCart] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(6); // Fixed page size
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     fetchCategories();
@@ -34,7 +40,7 @@ const OrderSessionPage = () => {
     } else {
       fetchProducts();
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, page]);
 
   const fetchCategories = async () => {
     try {
@@ -55,8 +61,13 @@ const OrderSessionPage = () => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        params: {
+          page_number: page,
+          page_size: pageSize,
+        },
       });
       setProducts(response.data.products);
+      setTotalPages(response.data.total_pages);
     } catch (error) {
       console.error("Failed to fetch products", error);
     }
@@ -68,19 +79,55 @@ const OrderSessionPage = () => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        params: {
+          page_number: page,
+          page_size: pageSize,
+        },
       });
       setProducts(response.data.products);
+      setTotalPages(response.data.total_pages);
     } catch (error) {
       console.error("Failed to fetch products by category", error);
     }
   };
 
+  const updateStoreWithPricelist = (products) => {
+    setProducts(products);
+  };
+
+  const updateCartWithPricelist = (pricelistProducts) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => {
+        const pricelistProduct = pricelistProducts.find(
+          (product) => product.id === item.id
+        );
+        console.log("yousri is here ", pricelistProduct);
+        return pricelistProduct.new_price
+          ? {
+              ...item,
+              old_price: item.unit_price,
+              unit_price: pricelistProduct.new_price,
+            }
+          : {
+              ...item,
+              unit_price: item.old_price ? item.old_price : item.unit_price,
+              old_price: null,
+            };
+      })
+    );
+  };
+
   const handleCategoryChange = (event, newCategory) => {
     setSelectedCategory(newCategory);
+    setPage(1);
   };
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
   };
 
   const filteredProducts = products.filter((product) =>
@@ -90,22 +137,25 @@ const OrderSessionPage = () => {
   const addToCart = (product) => {
     const existingItem = cart.find((item) => item.id === product.id);
     if (existingItem) {
-      setCart(
-        cart.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + 1,
-                unit_price: product.unit_price,
-              }
-            : item
-        )
-      );
+      if (existingItem.quantity < product.quantity) {
+        setCart(
+          cart.map((item) =>
+            item.id === product.id
+              ? {
+                  ...item,
+                  quantity: item.quantity + 1,
+                }
+              : item
+          )
+        );
+      }
     } else {
-      setCart([
-        ...cart,
-        { ...product, quantity: 1, unit_price: product.unit_price },
-      ]);
+      if (product.quantity > 0) {
+        setCart([
+          ...cart,
+          { ...product, quantity: 1, maxQuantity: product.quantity },
+        ]);
+      }
     }
   };
 
@@ -124,50 +174,18 @@ const OrderSessionPage = () => {
     }
   };
 
-  const updateCartWithPricelist = (pricelist) => {
-    const updatedCart = cart.map((item) => {
-      const pricelistItem = pricelist.items.find(
-        (p) => p.product_id === item.id
-      );
-      if (pricelistItem) {
-        return { ...item, unit_price: pricelistItem.new_price };
-      }
-      return item;
-    });
-    setCart(updatedCart);
-  };
-
-  const applyDiscountOrCoupon = async (code) => {
-    try {
-      const response = await api.post(
-        "/apply-code",
-        { code },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      if (response.data.type === "pricelist") {
-        updateCartWithPricelist(response.data.pricelist);
-      } else if (response.data.type === "coupon") {
-        // Apply coupon logic
-      } else if (response.data.type === "buyXgetY") {
-        // Apply BuyXGetY logic
-      }
-    } catch (error) {
-      console.error("Failed to apply code", error);
-    }
-  };
-
   const handleExitSession = () => {
     navigate("/sessions");
   };
 
   return (
-    <Box display="flex" flexDirection="column">
-      <Box display="flex" justifyContent="space-between" p={2}>
+    <Box display="flex" flexDirection="column" p={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Order Session</Typography>
         <Button
           variant="contained"
@@ -178,8 +196,8 @@ const OrderSessionPage = () => {
         </Button>
       </Box>
       <Divider />
-      <Box display="flex" p={2}>
-        <Box width="70%">
+      <Box display="flex" mt={2} mb={2}>
+        <Box width="70%" pr={2}>
           <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
             <Tabs
               value={selectedCategory}
@@ -197,7 +215,18 @@ const OrderSessionPage = () => {
                 />
               ))}
             </Tabs>
-            <Box display="flex" alignItems="center" mt={2} mb={2}>
+            <Box
+              display="flex"
+              alignItems="center"
+              mt={2}
+              mb={2}
+              component={Paper}
+              elevation={1}
+              p={1}
+            >
+              <IconButton>
+                <SearchIcon />
+              </IconButton>
               <InputBase
                 placeholder="Search products"
                 value={searchTerm}
@@ -207,21 +236,36 @@ const OrderSessionPage = () => {
             </Box>
           </Paper>
           <Grid container spacing={2}>
-            {filteredProducts.map((product) => (
-              <Grid item xs={12} sm={6} md={4} key={product.id}>
-                <ProductCard product={product} onAddToCart={addToCart} />
-              </Grid>
-            ))}
+            {filteredProducts.map((product) => {
+              const cartQuantity =
+                cart.find((item) => item.id === product.id)?.quantity || 0;
+              return (
+                <Grid item xs={12} sm={6} md={4} key={product.id}>
+                  <ProductCard
+                    product={product}
+                    onAddToCart={addToCart}
+                    cartQuantity={cartQuantity}
+                  />
+                </Grid>
+              );
+            })}
           </Grid>
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+            />
+          </Box>
         </Box>
         <Box width="30%" pl={2}>
           <OrderSummary
             cart={cart}
             onRemoveFromCart={removeFromCart}
             updateCartWithPricelist={updateCartWithPricelist}
-            applyDiscount={(code) => applyDiscountOrCoupon(code)}
-            applyCoupon={(code) => applyDiscountOrCoupon(code)}
-            applyBuyXGetY={(code) => applyDiscountOrCoupon(code)}
+            updateStoreWithPricelist={updateStoreWithPricelist}
+            onAddToCart={addToCart}
           />
         </Box>
       </Box>

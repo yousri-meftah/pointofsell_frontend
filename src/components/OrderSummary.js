@@ -115,7 +115,13 @@ const OrderSummary = ({
       0
     );
 
-    const productsIds = cart.map((item) => [item.id, item.quantity]);
+    const productsIds = [];
+
+    for (let i = 0; i < cart.length; i++) {
+      const item = cart[i];
+      const productTuple = [parseInt(item.id, 10), parseInt(item.quantity, 10)];
+      productsIds.push(productTuple);
+    }
 
     const orderData = {
       customer_id: selectedCustomer || null,
@@ -128,12 +134,7 @@ const OrderSummary = ({
     };
 
     try {
-      await api.post("/orders", orderData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
+      await api.post("/orders", orderData, {});
 
       // Reset states after the order is created
 
@@ -197,6 +198,8 @@ const OrderSummary = ({
     } else {
       resetPrices();
     }
+    setAppliedPrograms([]);
+    setDiscounts({});
   };
 
   const handleApplyCode = async () => {

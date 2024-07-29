@@ -32,6 +32,24 @@ const OrderSessionPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [sessionStatus, setSessionStatus] = useState("Actions");
   const { sessionId } = useParams();
+
+  useEffect(() => {
+    const handleTabClose = async (event) => {
+      event.preventDefault();
+      try {
+        if (sessionId) {
+          await api.post(`/sessions/${sessionId}/close`, {}, {});
+        }
+      } catch (error) {
+        console.error("Failed to close session", error);
+      }
+    };
+    window.addEventListener("beforeunload", handleTabClose);
+    return () => {
+      window.removeEventListener("beforeunload", handleTabClose);
+    };
+  }, [sessionId]);
+
   useEffect(() => {
     fetchCategories();
   }, []);

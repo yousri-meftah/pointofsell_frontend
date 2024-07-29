@@ -10,7 +10,7 @@ import PaginatedTable from "../components/PaginatedTable";
 import ConfirmModal from "../components/ConfirmModal";
 import api from "../services/api";
 import Filter from "./Filter";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const Sessions = () => {
@@ -21,14 +21,31 @@ const Sessions = () => {
   const [filter, setFilter] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-  //const [alert, setAlert] = useState(null);
   const user = useSelector((state) => state.auth.user);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if the employee has an open session
+    const checkOpenSession = async () => {
+      try {
+        const response = await api.get(`/sessions/opened_session`, {});
+        if (response.data.Session_id) {
+          navigate(`/sessions/${response.data.Session_id}`);
+        }
+      } catch (error) {
+        console.error("Failed to check for open session", error);
+      }
+    };
+    checkOpenSession();
+
+    //await api.post(`/sessions/${sessionId}/pause`, {}, {});
+    //navigate("/sessions");
+  }, [navigate]);
+
   useEffect(() => {
     fetchSessions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, pageSize, filter]);
-
-  console.log("user y = ", user);
   const fetchSessions = async () => {
     try {
       const response = await api.get("/sessions", {
@@ -129,9 +146,10 @@ const Sessions = () => {
   const handleSessionStatusChange = async (event) => {
     try {
       //[TODO] i need to implement the get paused session by employee id;
-      const response = await api.post(`/sessions/resume`, {}, {});
-      if (response.data.success) {
-        const sessionId = response.data.sessionId;
+      const response = await api.get(`/sessions/check_paused_session/`, {});
+      console.log("response = ", response);
+      if (response.data.status === 200) {
+        const sessionId = response.data.Session_id;
         navigate(`/sessions/${sessionId}`);
       } else {
         alert("You haven't an opened session for you yet.");

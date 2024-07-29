@@ -86,11 +86,12 @@ const AppRoutes = () => {
       >
         <Route path="/orders" element={<Orders />} />
       </Route>
-      <Route path="/see" element={<OrderSessionPage />} />
+
       <Route
         element={<ProtectedRoute allowedRoles={["SUPER_USER", "VENDOR"]} />}
       >
         <Route path="/sessions" element={<Sessions />} />
+        <Route path="/sessions/:sessionId" element={<OrderSessionPage />} />
       </Route>
 
       <Route

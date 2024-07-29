@@ -19,6 +19,7 @@ import {
 import { Remove, Add } from "@mui/icons-material";
 import api from "../services/api";
 import Receipt from "../components/Receipt";
+import { useParams } from "react-router-dom";
 
 const OrderSummary = ({
   cart,
@@ -36,7 +37,7 @@ const OrderSummary = ({
   const [discounts, setDiscounts] = useState({});
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState(null);
-
+  const { sessionId } = useParams();
   useEffect(() => {
     fetchCustomers();
     fetchPricelists();
@@ -107,6 +108,44 @@ const OrderSummary = ({
       setSelectedPricelist("");
     }
   };
+
+  const handlePrint = async () => {
+    const totalPrice = cart.reduce(
+      (total, item) => total + item.unit_price * item.quantity,
+      0
+    );
+
+    const productsIds = cart.map((item) => [item.id, item.quantity]);
+
+    const orderData = {
+      customer_id: selectedCustomer || null,
+      products_ids: productsIds,
+      session_id: sessionId, // Assuming sessionId is available in the component
+      created_on: new Date().toISOString(),
+      total_price: totalPrice - totalDiscount,
+      pricelist_id: selectedPricelist || null,
+      program_item_id: appliedPrograms.map((program) => program.code),
+    };
+
+    try {
+      await api.post("/orders", orderData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Reset states after the order is created
+
+      window.print();
+    } catch (error) {
+      console.error("Failed to save order", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+      }
+    }
+  };
+
   const handleReceipt = () => {
     const totalPrice = cart.reduce(
       (total, item) => total + item.unit_price * item.quantity,
@@ -125,6 +164,7 @@ const OrderSummary = ({
       appliedPrograms,
       selectedPricelist,
       pricelists,
+      selectedCustomer,
     };
 
     setReceiptData(receiptData);
@@ -389,6 +429,7 @@ const OrderSummary = ({
         <Receipt
           receiptData={receiptData}
           onClose={() => setShowReceipt(false)}
+          handlePrint={handlePrint}
         />
       )}
       <Button

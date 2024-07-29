@@ -10,7 +10,8 @@ import PaginatedTable from "../components/PaginatedTable";
 import ConfirmModal from "../components/ConfirmModal";
 import api from "../services/api";
 import Filter from "./Filter";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Sessions = () => {
   const [sessions, setSessions] = useState([]);
@@ -20,11 +21,14 @@ const Sessions = () => {
   const [filter, setFilter] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState(null);
-
+  //const [alert, setAlert] = useState(null);
+  const user = useSelector((state) => state.auth.user);
+  const navigate = useNavigate();
   useEffect(() => {
     fetchSessions();
   }, [page, pageSize, filter]);
 
+  console.log("user y = ", user);
   const fetchSessions = async () => {
     try {
       const response = await api.get("/sessions", {
@@ -59,21 +63,24 @@ const Sessions = () => {
   };
 
   const handleStartSession = async () => {
-    Navigate(`/sessions/5`);
-    return;
+    const currentTime = new Date().toISOString();
+
     try {
       const response = await api.post(
         "/sessions",
-        {},
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+          employee_id: user.id, // Adjust as needed
+          opened_at: currentTime,
+          closed_at: currentTime, // This can be updated when the session is closed
+          session_status: "OPEN",
+        },
+        {}
       );
-      const newSessionId = response.data.session_id; // Adjust according to your response structure
-      Navigate(`/sessions/${newSessionId}`);
+      const newSessionId = response.data.Session_id;
+      console.log("first session id = ", newSessionId);
+      navigate(`/sessions/${newSessionId}`);
     } catch (error) {
+      alert("There a session already opened");
       console.error("Failed to start session", error);
     }
   };
@@ -119,7 +126,20 @@ const Sessions = () => {
     },
     { field: "session_status", headerName: "Status" },
   ];
-
+  const handleSessionStatusChange = async (event) => {
+    try {
+      //[TODO] i need to implement the get paused session by employee id;
+      const response = await api.post(`/sessions/resume`, {}, {});
+      if (response.data.success) {
+        const sessionId = response.data.sessionId;
+        navigate(`/sessions/${sessionId}`);
+      } else {
+        alert("You haven't an opened session for you yet.");
+      }
+    } catch (error) {
+      alert("Failed to resume session");
+    }
+  };
   return (
     <div className="p-4">
       <div className="flex justify-between mb-4">
@@ -131,6 +151,13 @@ const Sessions = () => {
             onClick={handleStartSession}
           >
             Start Session
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSessionStatusChange}
+          >
+            Resume Session
           </Button>
         </div>
       </div>

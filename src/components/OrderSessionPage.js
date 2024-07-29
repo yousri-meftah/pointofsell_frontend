@@ -12,6 +12,8 @@ import {
   Divider,
   IconButton,
   Pagination,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import api from "../services/api";
@@ -19,7 +21,6 @@ import ProductCard from "../components/ProductCard";
 import OrderSummary from "../components/OrderSummary";
 
 const OrderSessionPage = () => {
-  const { sessionId } = useParams();
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
@@ -29,7 +30,8 @@ const OrderSessionPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(6); // Fixed page size
   const [totalPages, setTotalPages] = useState(1);
-
+  const [sessionStatus, setSessionStatus] = useState("Actions");
+  const { sessionId } = useParams();
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -62,7 +64,7 @@ const OrderSessionPage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         params: {
-          page_number: page,
+          page: page,
           page_size: pageSize,
         },
       });
@@ -73,6 +75,25 @@ const OrderSessionPage = () => {
     }
   };
 
+  const handleSessionStatusChange = async (event) => {
+    const newStatus = event.target.value;
+    setSessionStatus(newStatus);
+    if (newStatus === "Actions") {
+      return;
+    }
+    try {
+      if (newStatus === "pause") {
+        await api.post(`/sessions/${sessionId}/pause`, {}, {});
+        navigate("/sessions");
+      } else if (newStatus === "close") {
+        await api.post(`/sessions/${sessionId}/close`, {}, {});
+        navigate("/sessions");
+      }
+    } catch (error) {
+      console.error(`Failed to ${newStatus} session`, error);
+    }
+  };
+
   const fetchProductsByCategory = async (categoryId) => {
     try {
       const response = await api.get(`/products/category/${categoryId}`, {
@@ -80,7 +101,7 @@ const OrderSessionPage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         params: {
-          page_number: page,
+          page: page,
           page_size: pageSize,
         },
       });
@@ -187,13 +208,15 @@ const OrderSessionPage = () => {
         mb={2}
       >
         <Typography variant="h4">Order Session</Typography>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleExitSession}
+        <Select
+          value={sessionStatus}
+          onChange={handleSessionStatusChange}
+          displayEmpty
         >
-          Exit Session
-        </Button>
+          <MenuItem value="Actions">Actions</MenuItem>
+          <MenuItem value="pause">Pause</MenuItem>
+          <MenuItem value="close">Exit</MenuItem>
+        </Select>
       </Box>
       <Divider />
       <Box display="flex" mt={2} mb={2}>

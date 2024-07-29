@@ -10,7 +10,7 @@ import {
   Divider,
 } from "@mui/material";
 
-const Receipt = ({ receiptData, onClose }) => {
+const Receipt = ({ receiptData, onClose, handlePrint }) => {
   const {
     cart,
     totalPrice,
@@ -19,10 +19,6 @@ const Receipt = ({ receiptData, onClose }) => {
     selectedPricelist,
     pricelists,
   } = receiptData;
-
-  const handlePrint = () => {
-    window.print();
-  };
 
   return (
     <Box

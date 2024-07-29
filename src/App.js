@@ -11,7 +11,7 @@ const AppContent = () => {
     "/reset-password",
     "/activate",
     "/login",
-    "/see",
+    "/sessions/{sessionId}",
   ];
   const hideSidebar = hideSidebarPaths.some((path) =>
     location.pathname.startsWith(path)

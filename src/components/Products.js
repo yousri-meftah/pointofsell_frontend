@@ -88,6 +88,8 @@ const Products = () => {
   };
 
   const handleSaveProduct = async (product) => {
+    console.log("producttt = ",product);
+    
     try {
       if (selectedProduct && selectedProduct.id) {
         // Update product

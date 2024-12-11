@@ -213,10 +213,6 @@ const OrderSessionPage = () => {
     }
   };
 
-  const handleExitSession = () => {
-    navigate("/sessions");
-  };
-
   return (
     <Box display="flex" flexDirection="column" p={2}>
       <Box
@@ -303,6 +299,7 @@ const OrderSessionPage = () => {
         <Box width="30%" pl={2}>
           <OrderSummary
             cart={cart}
+            setCart={setCart}
             onRemoveFromCart={removeFromCart}
             updateCartWithPricelist={updateCartWithPricelist}
             updateStoreWithPricelist={updateStoreWithPricelist}

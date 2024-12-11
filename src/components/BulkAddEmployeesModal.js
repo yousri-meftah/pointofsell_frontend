@@ -5,12 +5,11 @@ import {
   Typography,
   Button,
   Alert,
-  TextField,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 
-const BulkImportTable = ({ open, onClose }) => {
+const BulkAddEmployeesModal = ({ open, onClose }) => {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null); // Store table data from the API
@@ -41,11 +40,10 @@ const BulkImportTable = ({ open, onClose }) => {
 
     const formData = new FormData();
     formData.append("file", file);
-    //formData.append("force", force); // Pass force parameter to API
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/customers/bulk_add?force="+force, // Replace with your API endpoint
+        "http://localhost:8000/employee/bulk_add_employees?force="+force, // Replace with your API endpoint
         formData,
         {
           headers: {
@@ -54,7 +52,21 @@ const BulkImportTable = ({ open, onClose }) => {
           },
         }
       );
-      const fields  = ["email","name","pricelist_id"]
+
+      const fields = [
+        "firstname",
+        "lastname",
+        "number",
+        "gender",
+        "phone_number",
+        "email",
+        "status",
+        "birthdate",
+        "contract_type",
+        "cnss_number",
+        "roles",
+      ];
+
       const { status, data: tableData, can_force, errors, message } = response.data;
 
       if (status === "error") {
@@ -77,66 +89,73 @@ const BulkImportTable = ({ open, onClose }) => {
     }
   };
 
-  const handleProcessRowUpdate = (newRow, oldRow) => {
-    try {
-      // Update the data with the modified row
-      const updatedRows = data.tableData.map((row, index) =>
-        index === newRow.id - 1 ? { ...row, ...newRow } : row
-      );
-  
-      setData((prevState) => ({
-        ...prevState,
-        tableData: updatedRows,
-      }));
-  
-      return newRow; // Return the updated row
-    } catch (error) {
-      console.error("Error updating row:", error);
-      throw error; // Re-throw the error to let the DataGrid handle it
-    }
+  const handleEditCellChange = (params) => {
+    const rowIndex = params.id - 1; // Adjust the index based on row ID
+    const updatedRows = [...data.tableData];
+    updatedRows[rowIndex][params.field] = params.value;
+
+    setData((prevState) => ({
+      ...prevState,
+      tableData: updatedRows,
+    }));
   };
-  const handleRowUpdateError = (error) => {
-    console.error("Row update error:", error);
-  };
-  
 
   const handleGenerateCSV = () => {
-    console.log("data = ",data);
-    debugger
-    
     if (!data || !data.fields || !data.tableData) {
       console.error("Invalid data for generating CSV");
       return;
     }
-  
+
     const csvRows = [
       data.fields.join(","), // Create CSV header
       ...data.tableData.map((row) =>
-        data.fields.map((field) => row[field] || "").join(",") // Map updated rows
+        data.fields.map((field) => row[field] || "").join(",")
       ),
     ];
-  
+
     const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "updated_customers.csv");
+    link.setAttribute("download", "updated_employees.csv");
     document.body.appendChild(link); // Required for Firefox
     link.click();
   };
-  
 
   const columns = [
+    { field: "firstname", headerName: "First Name", flex: 1, editable: true },
+    { field: "lastname", headerName: "Last Name", flex: 1, editable: true },
+    { field: "number", headerName: "Number", flex: 1, editable: true },
+    { field: "gender", headerName: "Gender", flex: 1, editable: true },
+    { field: "phone_number", headerName: "Phone Number", flex: 1, editable: true },
     { field: "email", headerName: "Email", flex: 1, editable: true },
-    { field: "name", headerName: "Name", flex: 1, editable: true },
-    { field: "pricelist_id", headerName: "Pricelist ID", flex: 1, editable: true },
+    { field: "status", headerName: "Status", flex: 1, editable: true },
+    { field: "birthdate", headerName: "Birthdate", flex: 1, editable: true },
+    { field: "contract_type", headerName: "Contract Type", flex: 1, editable: true },
+    { field: "cnss_number", headerName: "CNSS Number", flex: 1, editable: true },
+    { field: "roles", headerName: "Roles", flex: 1, editable: true },
   ];
-
+  const handleProcessRowUpdate = (newRow, oldRow) => {
+    const updatedRows = data.tableData.map((row, index) =>
+      index === newRow.id - 1 ? { ...row, ...newRow } : row
+    );
+  
+    setData((prevState) => ({
+      ...prevState,
+      tableData: updatedRows,
+    }));
+  
+    return newRow; // Return the updated row to apply changes in the DataGrid
+  };
+  
+  const handleRowUpdateError = (error) => {
+    console.error("Error updating row:", error);
+  };
+  
   const rows = data?.tableData?.map((row, index) => ({
     id: index + 1, // Unique ID for each row
     ...row,
   })) || [];
-
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -155,7 +174,7 @@ const BulkImportTable = ({ open, onClose }) => {
         }}
       >
         <Typography variant="h6" component="h2" mb={2}>
-          Bulk Add Customers
+          Bulk Add Employees
         </Typography>
 
         <input
@@ -197,18 +216,6 @@ const BulkImportTable = ({ open, onClose }) => {
             {successMessage}
           </Alert>
         )}
-        {canForceErrors.length > 0 && (
-          <Box mb={2}>
-            <Typography variant="body1" color="orange" gutterBottom>
-              Normal Errors:
-            </Typography>
-            {canForceErrors.map((error, index) => (
-              <Alert key={index} severity="warning" sx={{ marginBottom: 1 }}>
-                {`Line ${index || "Unknown"}: ${error}`}
-              </Alert>
-            ))}
-          </Box>
-        )}
         {criticalErrors.length > 0 && (
           <Box mb={2}>
             <Typography variant="body1" color="error" gutterBottom>
@@ -227,9 +234,8 @@ const BulkImportTable = ({ open, onClose }) => {
             rows={rows}
             columns={columns}
             pageSize={5}
-            rowsPerPageOptions={[5, 10, 20]}
-            processRowUpdate={handleProcessRowUpdate}
-            onProcessRowUpdateError={handleRowUpdateError}
+            processRowUpdate={handleProcessRowUpdate} // Handles row updates
+            onProcessRowUpdateError={handleRowUpdateError} // Handles errors during updates
           />
         </Box>
       </Box>
@@ -237,4 +243,4 @@ const BulkImportTable = ({ open, onClose }) => {
   );
 };
 
-export default BulkImportTable;
+export default BulkAddEmployeesModal;

@@ -4,6 +4,7 @@ import PaginatedTable from "../components/PaginatedTable";
 import UserModal from "../components/UserModal";
 import ConfirmModal from "../components/ConfirmModal";
 import api from "../services/api";
+import BulkAddEmployeesModal from "./BulkAddEmployeesModal"
 import {
   Button,
   MenuItem,
@@ -21,6 +22,9 @@ const Employees = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [importModalOpen, setImportModalOpen] = useState(false); // For Import Employees modal
+
+  
 
   useEffect(() => {
     fetchEmployees();
@@ -100,7 +104,7 @@ const Employees = () => {
   };
 
   const handleConfirmDelete = async () => {
-    try {
+    /*try {
       await api.delete(`/employee/${selectedEmployee.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -110,7 +114,7 @@ const Employees = () => {
       console.error("Failed to delete employee", error);
     }
     setConfirmOpen(false);
-    fetchEmployees();
+    fetchEmployees();*/
   };
 
   const columns = [
@@ -141,9 +145,19 @@ const Employees = () => {
           >
             Add Employee
           </Button>
-          <Button variant="contained" color="secondary">
-            Import Employees
-          </Button>
+          <Button
+        variant="contained"
+        color="secondary"
+        onClick={() => setImportModalOpen(true)} // Open Import Employees modal
+      >
+        Import Employees
+      </Button>
+          {importModalOpen && (
+        <BulkAddEmployeesModal
+          open={importModalOpen}
+          onClose={() => setImportModalOpen(false)} // Close the modal
+        />
+      )}
         </div>
       </div>
       <div className="flex justify-between mb-4">

@@ -36,7 +36,10 @@ const OrderDetailsModal = ({ open, onClose, orderDetails }) => {
         <strong>Session ID:</strong> {orderDetails.session_id}
       </Typography>
       <Typography variant="body1">
-        <strong>Customer ID:</strong> {orderDetails.customer_id}
+        <strong>applied Code : </strong> {orderDetails.code}
+      </Typography>
+      <Typography variant="body1">
+        <strong>Customer ID:</strong> {orderDetails.customer_name}
       </Typography>
     </Box>
     <Box display="flex" justifyContent="space-between" mb={2}>
@@ -44,7 +47,7 @@ const OrderDetailsModal = ({ open, onClose, orderDetails }) => {
         <strong>Total Price:</strong> ${orderDetails.total_price.toFixed(2)}
       </Typography>
       <Typography variant="body1">
-        <strong>Pricelist ID:</strong> {orderDetails.pricelist_id}
+        <strong>Pricelist ID:</strong> {orderDetails.pricelist_name}
       </Typography>
     </Box>
     <Typography variant="body1" gutterBottom>

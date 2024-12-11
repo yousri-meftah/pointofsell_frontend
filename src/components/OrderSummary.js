@@ -23,6 +23,7 @@ import { useParams } from "react-router-dom";
 
 const OrderSummary = ({
   cart,
+  setCart,
   onRemoveFromCart,
   updateCartWithPricelist,
   updateStoreWithPricelist,
@@ -135,9 +136,8 @@ const OrderSummary = ({
 
     try {
       await api.post("/orders", orderData, {});
-
-      // Reset states after the order is created
-
+      setCart([]);
+      setAppliedPrograms([])
       window.print();
     } catch (error) {
       console.error("Failed to save order", error);
@@ -146,6 +146,7 @@ const OrderSummary = ({
       }
     }
   };
+
 
   const handleReceipt = () => {
     const totalPrice = cart.reduce(

@@ -37,7 +37,7 @@ const Sidebar = () => {
         Point Of Sell
       </div>
       <List>
-        {hasRole(["SUPER_USER", "ADMIN", "VENDOR", "INVENTORY_MANAGER"]) && (
+        {hasRole(["SUPER_USER", "ADMIN"]) && (
           <ListItem button component={Link} to="/dashboard">
             <ListItemIcon>
               <DashboardIcon className="text-white" />

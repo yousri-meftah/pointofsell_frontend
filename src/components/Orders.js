@@ -34,7 +34,7 @@ const OrdersPage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         params: {
-          page: page-1,
+          page: page,
           page_size: pageSize,
           filter: filter,
         },
@@ -66,6 +66,8 @@ const OrdersPage = () => {
   };
 
   const handlePageChange = (newPage) => {
+    console.log("new = ",newPage);
+    
     setPage(newPage);
   };
 

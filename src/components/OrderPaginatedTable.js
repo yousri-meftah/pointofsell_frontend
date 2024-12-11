@@ -57,8 +57,8 @@ const OrderPaginatedTable = ({
       <div className="flex justify-end mt-4">
         <Pagination
           count={totalPages}
-          page={page - 1}
-          onChange={(_, newPage) => onPageChange(newPage + 1)}
+          page={page}
+          onChange={(_, newPage) => onPageChange(newPage )}
         />
       </div>
     </div>

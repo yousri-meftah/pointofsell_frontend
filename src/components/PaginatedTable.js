@@ -22,7 +22,6 @@ const PaginatedTable = ({
   totalPages,
   onPageChange,
 }) => {
-  console.log("page in paginated table", data);
   return (
     <div>
       <TableContainer component={Paper}>
@@ -33,7 +32,7 @@ const PaginatedTable = ({
                 <TableCell key={column.field}>{column.headerName}</TableCell>
               ))}
               <TableCell>Edit</TableCell>
-              <TableCell>Delete</TableCell>
+              
             </TableRow>
           </TableHead>
           <TableBody>
@@ -55,11 +54,7 @@ const PaginatedTable = ({
                     <EditIcon />
                   </IconButton>
                 </TableCell>
-                <TableCell>
-                  <IconButton onClick={() => onDelete(row.id)}>
-                    <DeleteIcon />
-                  </IconButton>
-                </TableCell>
+                
               </TableRow>
             ))}
           </TableBody>

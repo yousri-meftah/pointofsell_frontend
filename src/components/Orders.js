@@ -34,7 +34,7 @@ const OrdersPage = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         params: {
-          page: page,
+          page: page-1,
           page_size: pageSize,
           filter: filter,
         },

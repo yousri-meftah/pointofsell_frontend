@@ -20,6 +20,8 @@ const OrderPaginatedTable = ({
   totalPages,
   onPageChange,
 }) => {
+  console.log("dattttaaa = ",data);
+  
   return (
     <div>
       <TableContainer component={Paper}>

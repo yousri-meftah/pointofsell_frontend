@@ -161,7 +161,7 @@ const Sessions = () => {
   return (
     <div className="p-4">
       <div className="flex justify-between mb-4">
-        <Filter onFilter={handleFilter} />
+        {/* <Filter onFilter={handleFilter} /> */}
         <div>
           <Button
             variant="contained"
@@ -202,12 +202,12 @@ const Sessions = () => {
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-      <ConfirmModal
+      {/* <ConfirmModal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleConfirmEndSession}
         message="Are you sure you want to end this session?"
-      />
+      /> */}
     </div>
   );
 };

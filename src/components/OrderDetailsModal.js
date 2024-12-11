@@ -39,7 +39,7 @@ const OrderDetailsModal = ({ open, onClose, orderDetails }) => {
         <strong>applied Code : </strong> {orderDetails.code}
       </Typography>
       <Typography variant="body1">
-        <strong>Customer ID:</strong> {orderDetails.customer_name}
+        <strong>Customer Name :</strong> {orderDetails.customer_name}
       </Typography>
     </Box>
     <Box display="flex" justifyContent="space-between" mb={2}>

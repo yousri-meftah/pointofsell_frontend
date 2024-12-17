@@ -7,7 +7,8 @@ import {
   Alert,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import axios from "axios";
+import api from "../services/api";
+
 
 const BulkAddEmployeesModal = ({ open, onClose }) => {
   const [file, setFile] = useState(null);
@@ -42,8 +43,8 @@ const BulkAddEmployeesModal = ({ open, onClose }) => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/employee/bulk_add_employees?force="+force, // Replace with your API endpoint
+      const response = await api.post(
+        "employee/bulk_add_employees?force="+force, // Replace with your API endpoint
         formData,
         {
           headers: {

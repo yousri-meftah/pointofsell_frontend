@@ -8,7 +8,8 @@ import {
   TextField,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import axios from "axios";
+import api from "../services/api";
+
 
 const BulkImportTable = ({ open, onClose }) => {
   const [file, setFile] = useState(null);
@@ -44,8 +45,8 @@ const BulkImportTable = ({ open, onClose }) => {
     //formData.append("force", force); // Pass force parameter to API
 
     try {
-      const response = await axios.post(
-        "http://localhost:8000/customers/bulk_add?force="+force, // Replace with your API endpoint
+      const response = await api.post(
+        "/customers/bulk_add?force="+force, // Replace with your API endpoint
         formData,
         {
           headers: {
